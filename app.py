@@ -30,6 +30,8 @@ def get_predictor():
     return predictor
 
 @app.route("/")
+@app.route("/index")
+@app.route("/home")
 def index():
     """Render the AI Smart Keyboard interface."""
     return render_template("index.html")
