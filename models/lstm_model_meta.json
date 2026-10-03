@@ -1,0 +1,6 @@
+{
+  "vocab_size": 520,
+  "seq_length": 4,
+  "embedding_dim": 64,
+  "lstm_units": 128
+}

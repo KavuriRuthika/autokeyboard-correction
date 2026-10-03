@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeuroKey AI — Next-Word Prediction & Autocorrect Smart Keyboard</title>
+  <meta name="description" content="AI-Powered Smart Keyboard featuring deep LSTM neural network, interpolated N-gram language models, and QWERTY-proximity Bayesian autocorrect.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="dark-theme">
+  <!-- Glowing Ambient Background Gradients -->
+  <div class="ambient-glow glow-cyan"></div>
+  <div class="ambient-glow glow-indigo"></div>
+  <div class="ambient-glow glow-violet"></div>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="brand-container">
+      <div class="brand-logo-wrapper">
+        <div class="brand-logo-icon">
+          <span class="pulsing-core"></span>
+          <span class="neural-ring"></span>
+        </div>
+        <div class="brand-titles">
+          <div class="brand-badge-row">
+            <h1 class="brand-title">NeuroKey <span class="accent-text">AI</span></h1>
+            <span class="tag-pill version-pill">v2.4</span>
+            <span class="tag-pill project-pill">Final Year College Demonstration</span>
+          </div>
+          <p class="brand-subtitle">Smart Keyboard with Context Anticipation &amp; Bayesian Autocorrect</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Status Bar -->
+    <div class="header-status-strip">
+      <div class="status-indicator-card" id="status-engine-card">
+        <span class="status-dot online" id="engine-status-dot"></span>
+        <div class="status-card-info">
+          <span class="status-label">ACTIVE ENGINE</span>
+          <span class="status-value" id="header-active-engine">LSTM Neural Net</span>
+        </div>
+      </div>
+      <div class="status-indicator-card">
+        <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        <div class="status-card-info">
+          <span class="status-label">LATENCY</span>
+          <span class="status-value highlight" id="header-latency-stat">0 ms</span>
+        </div>
+      </div>
+      <div class="status-indicator-card">
+        <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+        <div class="status-card-info">
+          <span class="status-label">SAVINGS</span>
+          <span class="status-value positive" id="header-savings-stat">0%</span>
+        </div>
+      </div>
+      <button class="nav-action-btn" id="btn-open-shortcuts" title="View Shortcuts & Expansions Library">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        <span>⚡ Shortcuts Library</span>
+      </button>
+      <button class="nav-action-btn" id="btn-open-benchmarks" title="View Benchmarks & Comparison">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        <span>Model Benchmarks</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-layout">
+    <!-- Center / Left: Interactive Smart Keyboard Studio -->
+    <section class="typing-studio-panel">
+      <!-- Input Control Header -->
+      <div class="studio-header">
+        <div class="scenario-selector-group">
+          <label for="demo-scenario-select" class="selector-label">Load Demo Scenario:</label>
+          <select id="demo-scenario-select" class="custom-select">
+            <option value="" selected>-- Select a Preset Demonstration Prompt --</option>
+            <option value="the fn has high acc and uses an efficient algo">⚡ Shortcuts Demo: "the fn has high acc and uses an efficient algo"</option>
+            <option value="pls send the doc asap thx">💬 Messaging Shortcuts: "pls send the doc asap thx"</option>
+            <option value="teh intellignet smarr alogrithm">⚡ Typo Stress Test: "teh intellignet smarr alogrithm"</option>
+            <option value="artificial intelligence is">🤖 AI: "artificial intelligence is"</option>
+            <option value="machine learning models require">📊 ML: "machine learning models require"</option>
+            <option value="please let me know if you">✉️ Email: "please let me know if you"</option>
+            <option value="thank you very much for your">🤝 Courteous: "thank you very much for your"</option>
+            <option value="how are you doing">👋 Greeting: "how are you doing"</option>
+          </select>
+        </div>
+
+        <div class="action-buttons-group">
+          <button class="icon-action-btn magic-fix" id="btn-fix-entire-line" title="✨ Auto-Fix All Typos in Sentence / Whole Line (Ctrl+Enter)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/></svg>
+            <span class="btn-action-text">Auto-Fix Line</span>
+          </button>
+          <button class="icon-action-btn" id="btn-speak-text" title="Read Aloud Text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+          </button>
+          <button class="icon-action-btn" id="btn-copy-text" title="Copy Text to Clipboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </button>
+          <button class="icon-action-btn danger" id="btn-clear-text" title="Clear Canvas">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Text Typing Canvas with Ghost-Prediction Overlay -->
+      <div class="text-canvas-wrapper" id="canvas-container">
+        <textarea
+          id="main-typing-input"
+          class="smart-textarea"
+          placeholder="Start typing on your keyboard or tap the virtual keys below... (Try 'artificial intelligence' or type 'teh' to see autocorrect)"
+          spellcheck="false"
+          autofocus
+        ></textarea>
+        <!-- Ghost preview shown directly in canvas -->
+        <div class="ghost-prediction-badge" id="ghost-prediction-tag" style="display:none;">
+          <span class="ghost-prefix">Next:</span>
+          <span class="ghost-word" id="ghost-word-text"></span>
+          <span class="ghost-hint">[Tab]</span>
+        </div>
+      </div>
+
+      <!-- Whole Line Auto-Correction Suggestion Banner -->
+      <div class="line-autocorrect-banner" id="line-autocorrect-banner" style="display:none;">
+        <div class="banner-content">
+          <span class="banner-badge">✨ Whole Line Auto-Fix</span>
+          <span class="banner-text">Suggested: <strong id="line-corrected-text"></strong></span>
+        </div>
+        <button class="btn-apply-line-fix" id="btn-apply-line-fix" title="Apply full sentence correction">
+          <span>Apply Whole-Line Correction</span>
+          <span class="kbd-pill">[Ctrl+Enter]</span>
+        </button>
+      </div>
+
+      <!-- Live Typing Telemetry Bar -->
+      <div class="telemetry-bar">
+        <div class="telemetry-stat">
+          <span class="stat-num" id="stat-words">0</span>
+          <span class="stat-unit">words</span>
+        </div>
+        <div class="telemetry-stat">
+          <span class="stat-num" id="stat-chars">0</span>
+          <span class="stat-unit">chars</span>
+        </div>
+        <div class="telemetry-stat">
+          <span class="stat-num" id="stat-wpm">0</span>
+          <span class="stat-unit">WPM</span>
+        </div>
+        <div class="telemetry-stat">
+          <span class="stat-num highlight" id="stat-saved-keys">0</span>
+          <span class="stat-unit">keys saved</span>
+        </div>
+        <div class="sound-toggle-wrapper">
+          <label class="toggle-switch">
+            <input type="checkbox" id="toggle-keyboard-sound" checked>
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">Haptic Click Sound</span>
+        </div>
+      </div>
+
+      <!-- AI Prediction Ribbon (Bar above keyboard) -->
+      <div class="prediction-ribbon-container">
+        <div class="ribbon-mode-badge" id="ribbon-mode-badge">
+          <span class="pulse-indicator"></span>
+          <span id="ribbon-mode-text">Anticipating Next Word...</span>
+        </div>
+        <div class="prediction-candidates-strip" id="prediction-candidates-strip">
+          <!-- Dynamic Prediction Pills inserted here -->
+          <button class="prediction-pill skeleton"></button>
+          <button class="prediction-pill skeleton primary"></button>
+          <button class="prediction-pill skeleton"></button>
+        </div>
+      </div>
+
+      <!-- Virtual QWERTY Keyboard -->
+      <div class="virtual-keyboard-container" id="virtual-keyboard">
+        <!-- Row 1: Numbers & Symbols -->
+        <div class="keyboard-row">
+          <button class="key-btn" data-key="`" data-code="Backquote">~<br>`</button>
+          <button class="key-btn" data-key="1" data-code="Digit1">!<br>1</button>
+          <button class="key-btn" data-key="2" data-code="Digit2">@<br>2</button>
+          <button class="key-btn" data-key="3" data-code="Digit3">#<br>3</button>
+          <button class="key-btn" data-key="4" data-code="Digit4">$<br>4</button>
+          <button class="key-btn" data-key="5" data-code="Digit5">%<br>5</button>
+          <button class="key-btn" data-key="6" data-code="Digit6">^<br>6</button>
+          <button class="key-btn" data-key="7" data-code="Digit7">&amp;<br>7</button>
+          <button class="key-btn" data-key="8" data-code="Digit8">*<br>8</button>
+          <button class="key-btn" data-key="9" data-code="Digit9">(<br>9</button>
+          <button class="key-btn" data-key="0" data-code="Digit0">)<br>0</button>
+          <button class="key-btn" data-key="-" data-code="Minus">_<br>-</button>
+          <button class="key-btn" data-key="=" data-code="Equal">+<br>=</button>
+          <button class="key-btn key-backspace" data-key="Backspace" data-code="Backspace">⌫ Back</button>
+        </div>
+
+        <!-- Row 2: QWERTY -->
+        <div class="keyboard-row">
+          <button class="key-btn key-tab" data-key="Tab" data-code="Tab">Tab ⇥</button>
+          <button class="key-btn" data-key="q" data-code="KeyQ">Q</button>
+          <button class="key-btn" data-key="w" data-code="KeyW">W</button>
+          <button class="key-btn" data-key="e" data-code="KeyE">E</button>
+          <button class="key-btn" data-key="r" data-code="KeyR">R</button>
+          <button class="key-btn" data-key="t" data-code="KeyT">T</button>
+          <button class="key-btn" data-key="y" data-code="KeyY">Y</button>
+          <button class="key-btn" data-key="u" data-code="KeyU">U</button>
+          <button class="key-btn" data-key="i" data-code="KeyI">I</button>
+          <button class="key-btn" data-key="o" data-code="KeyO">O</button>
+          <button class="key-btn" data-key="p" data-code="KeyP">P</button>
+          <button class="key-btn" data-key="[" data-code="BracketLeft">{<br>[</button>
+          <button class="key-btn" data-key="]" data-code="BracketRight">}<br>]</button>
+          <button class="key-btn" data-key="\" data-code="Backslash">|<br>\</button>
+        </div>
+
+        <!-- Row 3: ASDFGHJKL -->
+        <div class="keyboard-row">
+          <button class="key-btn key-caps" id="btn-capslock" data-key="CapsLock" data-code="CapsLock">Caps ⇪</button>
+          <button class="key-btn" data-key="a" data-code="KeyA">A</button>
+          <button class="key-btn" data-key="s" data-code="KeyS">S</button>
+          <button class="key-btn" data-key="d" data-code="KeyD">D</button>
+          <button class="key-btn" data-key="f" data-code="KeyF">F</button>
+          <button class="key-btn" data-key="g" data-code="KeyG">G</button>
+          <button class="key-btn" data-key="h" data-code="KeyH">H</button>
+          <button class="key-btn" data-key="j" data-code="KeyJ">J</button>
+          <button class="key-btn" data-key="k" data-code="KeyK">K</button>
+          <button class="key-btn" data-key="l" data-code="KeyL">L</button>
+          <button class="key-btn" data-key=";" data-code="Semicolon">:<br>;</button>
+          <button class="key-btn" data-key="'" data-code="Quote">"<br>'</button>
+          <button class="key-btn key-enter" data-key="Enter" data-code="Enter">Enter ↵</button>
+        </div>
+
+        <!-- Row 4: ZXCVBNM -->
+        <div class="keyboard-row">
+          <button class="key-btn key-shift" id="btn-shift-left" data-key="Shift" data-code="ShiftLeft">Shift ⇧</button>
+          <button class="key-btn" data-key="z" data-code="KeyZ">Z</button>
+          <button class="key-btn" data-key="x" data-code="KeyX">X</button>
+          <button class="key-btn" data-key="c" data-code="KeyC">C</button>
+          <button class="key-btn" data-key="v" data-code="KeyV">V</button>
+          <button class="key-btn" data-key="b" data-code="KeyB">B</button>
+          <button class="key-btn" data-key="n" data-code="KeyN">N</button>
+          <button class="key-btn" data-key="m" data-code="KeyM">M</button>
+          <button class="key-btn" data-key="," data-code="Comma">&lt;<br>,</button>
+          <button class="key-btn" data-key="." data-code="Period">&gt;<br>.</button>
+          <button class="key-btn" data-key="?" data-code="Slash">?<br>/</button>
+          <button class="key-btn key-shift" id="btn-shift-right" data-key="Shift" data-code="ShiftRight">Shift ⇧</button>
+        </div>
+
+        <!-- Row 5: Space & Modifiers -->
+        <div class="keyboard-row">
+          <button class="key-btn key-mod" data-key="Control" data-code="ControlLeft">Ctrl</button>
+          <button class="key-btn key-mod" data-key="Alt" data-code="AltLeft">Alt</button>
+          <button class="key-btn key-space" data-key=" " data-code="Space">
+            <span class="space-title">SPACE</span>
+            <span class="space-sub">[Select #1 Prediction]</span>
+          </button>
+          <button class="key-btn key-mod" data-key="Alt" data-code="AltRight">Alt</button>
+          <button class="key-btn key-emoji" id="btn-quick-period" data-key="." data-code="Period">.com</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Column: AI Neural Inspector & Telemetry Dashboard -->
+    <aside class="ai-inspector-panel">
+      <!-- Engine Selector Card -->
+      <div class="inspector-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            Model Architecture
+          </h2>
+          <span class="card-tag" id="engine-tag-label">Neural</span>
+        </div>
+
+        <div class="model-toggle-pillbox">
+          <button class="model-toggle-btn active" id="btn-engine-lstm" data-engine="lstm">
+            <span class="btn-icon">🧠</span>
+            <span class="btn-text">Deep LSTM</span>
+            <span class="subtext">Keras Neural Net</span>
+          </button>
+          <button class="model-toggle-btn" id="btn-engine-ngram" data-engine="ngram">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-text">N-Gram LM</span>
+            <span class="subtext">Katz/Interpolation</span>
+          </button>
+          <button class="model-toggle-btn" id="btn-engine-ensemble" data-engine="ensemble">
+            <span class="btn-icon">🔀</span>
+            <span class="btn-text">Hybrid</span>
+            <span class="subtext">Ensemble Blend</span>
+          </button>
+        </div>
+
+        <!-- Controls -->
+        <div class="inspector-controls-list">
+          <div class="control-row">
+            <div class="control-info">
+              <span class="control-name">Bayesian Autocorrect</span>
+              <span class="control-desc">QWERTY proximity &amp; edit distance</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-autocorrect" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="control-row-slider">
+            <div class="slider-header">
+              <span class="control-name">LSTM Softmax Temperature</span>
+              <span class="slider-value" id="val-temperature">1.0</span>
+            </div>
+            <input type="range" id="slider-temperature" min="0.2" max="1.4" step="0.1" value="1.0" class="custom-range">
+            <div class="slider-legend">
+              <span>Precise (0.2)</span>
+              <span>Balanced (1.0)</span>
+              <span>Creative (1.4)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Probability Distribution Card -->
+      <div class="inspector-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            Probability Distribution
+          </h2>
+          <span class="card-tag">Softmax</span>
+        </div>
+
+        <div class="probability-distribution-container" id="probability-distribution-list">
+          <!-- Dynamic Probability Bars -->
+          <div class="empty-prob-state">Type a sentence to visualize live token probabilities.</div>
+        </div>
+      </div>
+
+      <!-- Context Window Attention Visualizer -->
+      <div class="inspector-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
+            Context Window Attention
+          </h2>
+          <span class="card-tag">n = 4</span>
+        </div>
+        <div class="context-chips-container" id="context-chips-list">
+          <span class="context-chip placeholder">&lt;Waiting for context tokens&gt;</span>
+        </div>
+        <div class="context-desc">
+          Past 4 tokens actively influencing the next-word prediction matrix.
+        </div>
+      </div>
+
+      <!-- Keystroke Ergonomics Card -->
+      <div class="inspector-card ergonomics-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+            Typing Efficiency (KSR)
+          </h2>
+        </div>
+        <div class="efficiency-meter-wrapper">
+          <div class="circular-progress-container">
+            <svg class="circular-chart" viewBox="0 0 36 36">
+              <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path class="circle" id="ksr-progress-circle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <div class="circle-inner-stat">
+              <span class="circle-percent-val" id="ksr-percent-val">0%</span>
+              <span class="circle-label">Keystrokes Saved</span>
+            </div>
+          </div>
+          <div class="efficiency-details">
+            <div class="metric-row">
+              <span class="m-label">Keys Physically Pressed:</span>
+              <span class="m-val" id="metric-keys-typed">0</span>
+            </div>
+            <div class="metric-row">
+              <span class="m-label">Keys Saved via AI:</span>
+              <span class="m-val highlight" id="metric-keys-saved">0</span>
+            </div>
+            <div class="metric-row">
+              <span class="m-label">Total Simulated Keys:</span>
+              <span class="m-val" id="metric-keys-total">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Benchmark Modal -->
+  <div class="modal-backdrop" id="modal-benchmarks" style="display:none;">
+    <div class="modal-container">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 class="modal-title">Model Performance &amp; Evaluation Benchmark</h2>
+          <p class="modal-subtitle">Direct empirical comparison between N-Gram and LSTM Language Models</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-benchmark-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="benchmark-summary-cards">
+          <div class="benchmark-card best">
+            <div class="b-badge">LSTM Model</div>
+            <h3 class="b-name">Deep Recurrent Network</h3>
+            <div class="b-stats-grid">
+              <div class="b-stat"><span class="b-label">Top-1 Accuracy</span><span class="b-val" id="bench-lstm-top1">--</span></div>
+              <div class="b-stat"><span class="b-label">Top-3 Accuracy</span><span class="b-val" id="bench-lstm-top3">--</span></div>
+              <div class="b-stat"><span class="b-label">Perplexity</span><span class="b-val" id="bench-lstm-ppl">--</span></div>
+              <div class="b-stat"><span class="b-label">Inference Latency</span><span class="b-val" id="bench-lstm-lat">--</span></div>
+              <div class="b-stat"><span class="b-label">Keystroke Savings</span><span class="b-val highlight" id="bench-lstm-ksr">--</span></div>
+            </div>
+          </div>
+
+          <div class="benchmark-card">
+            <div class="b-badge">N-Gram Model</div>
+            <h3 class="b-name">Interpolated 4-Gram</h3>
+            <div class="b-stats-grid">
+              <div class="b-stat"><span class="b-label">Top-1 Accuracy</span><span class="b-val" id="bench-ngram-top1">--</span></div>
+              <div class="b-stat"><span class="b-label">Top-3 Accuracy</span><span class="b-val" id="bench-ngram-top3">--</span></div>
+              <div class="b-stat"><span class="b-label">Perplexity</span><span class="b-val" id="bench-ngram-ppl">--</span></div>
+              <div class="b-stat"><span class="b-label">Inference Latency</span><span class="b-val" id="bench-ngram-lat">--</span></div>
+              <div class="b-stat"><span class="b-label">Keystroke Savings</span><span class="b-val highlight" id="bench-ngram-ksr">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="benchmark-insights-panel">
+          <h4>Key Engineering Insights for Demonstration:</h4>
+          <ul>
+            <li><strong>LSTM Generalization:</strong> The embedding and hidden recurrence allow the neural network to generalize across unseen word sequences with lower test perplexity.</li>
+            <li><strong>N-Gram Speed:</strong> The 4-gram hash lookup achieves sub-millisecond predictions, making it an ultra-lightweight candidate for embedded or mobile keyboards.</li>
+            <li><strong>Bayesian Autocorrect:</strong> Combining QWERTY physical key adjacency with language priors enables accurate single-keystroke typo recovery (e.g. <code>teh -&gt; the</code>, <code>smarr -&gt; smart</code>).</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn secondary" id="btn-recompute-benchmark">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;margin-right:6px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Re-run Benchmark
+        </button>
+        <button class="btn primary" id="btn-dismiss-benchmark">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shortcuts Library Modal -->
+  <div class="modal-backdrop" id="modal-shortcuts" style="display:none;">
+    <div class="modal-container shortcuts-modal">
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <h2 class="modal-title">⚡ Smart Shortcuts &amp; Text Expansions</h2>
+          <p class="modal-subtitle">Type shorthand tokens to instantly expand into full terms with domain-specific related word suggestions</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-shortcuts-modal">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="shortcuts-search-bar">
+          <input type="text" id="shortcuts-search-input" class="custom-input" placeholder="Search shortcuts (e.g. fn, ml, algo, plz, temp)...">
+        </div>
+
+        <div class="shortcuts-grid" id="shortcuts-cards-grid">
+          <!-- Dynamically populated or default shortcuts cards -->
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn primary" id="btn-dismiss-shortcuts">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/keyboard.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
