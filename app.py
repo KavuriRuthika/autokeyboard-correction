@@ -10,12 +10,15 @@ from flask import Flask, request, jsonify, render_template
 from src.predictor import SmartKeyboardPredictor
 from src.evaluator import evaluate_models
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-
-# Initialize global predictor
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 DATA_DIR = os.path.join(BASE_DIR, "data", "processed")
+
+app = Flask(
+    __name__,
+    static_folder=os.path.join(BASE_DIR, "static"),
+    template_folder=os.path.join(BASE_DIR, "templates")
+)
 
 predictor = None
 cached_metrics = None
